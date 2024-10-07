@@ -14,6 +14,15 @@ def send_file_to_client(client_socket, filename):
         client_socket.sendall(b'Error: File {filename} not found')
             
 
+def receive_file_from_client(client_socket, filename):
+    new_filename = "new" + filename
+    with open(new_filename, 'wb') as f:
+        while True:
+            data = client_socket.recv(1024)
+            if not data:
+                break
+            f.write(data)
+    print(f"File '{new_filename}' received successfully.")
 
 
 
@@ -30,10 +39,12 @@ def start_server():
         print(f'Connection from client {client_address}')
         
         command = client_socket.recv(1024).decode()
-        if command.startwith('G '):
+        if command.startswith('get '):
             filename = command.split(' ')[1]
             send_file_to_client(client_socket, filename)
-        
+        elif command.startswith('upload '):
+            filename = command.split(' ')[1]
+            receive_file_from_client(client_socket, filename)
         client_socket.close()
         
 if __name__ == '__main__':

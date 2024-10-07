@@ -13,7 +13,7 @@ def get_file_from_server(filename):
         print('Connected to server')
     
         # Send "get <filename>" command to the server
-        client_socket.sendall(f'G {filename}'.encode())
+        client_socket.sendall(f'get {filename}'.encode())
     
         # Receive the file from the server
         new_Filename = "new" + filename
@@ -29,7 +29,33 @@ def get_file_from_server(filename):
     finally:
         if client_socket:
             client_socket.close()
-       
+  
+def upload_file_to_server(filename):
+    try:
+        #Create socket to upload the file to the server
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_socket.connect((host, port))
+        print('Connected to server')
+        
+        # Send "upload <filename>" command to the server
+        client_socket.sendall(f'upload {filename}'.encode())
+        
+        # Open the file to be uploaded
+        with open(filename, 'rb') as file:
+            while True:
+                data = file.read(1024)
+                if not data:
+                    break
+                client_socket.sendall(data)
+        print(f'File: {filename} uploaded successfully')
+    except Exception as e:
+        print(f'Error: {e}')
+        client_socket.close() if client_socket else None
+    finally:
+        client_socket.close()
+           
+                
+                
 if __name__ == '__main__':
     while True:
         print("Enter 'get <filename>' to download or 'upload <filename>' to upload or 'exit' to quit.")
@@ -37,3 +63,11 @@ if __name__ == '__main__':
         if command.startswith("get "):
             filename = command.split(" ")[1]
             get_file_from_server(filename)
+        elif command.startswith("upload "):
+            filename = command.split(" ")[1]
+            upload_file_to_server(filename)
+        elif command == "exit":
+            break
+        else:
+            print("Invalid command. Please  use 'get', 'upload', or 'exit'..")
+        
